@@ -1,0 +1,87 @@
+General
+=======
+GameHash	= DC7C21D8
+GameBuild	= 1274FE4
+GameState	= 14A2076
+
+Camera
+======
+CameraStruct	= 14A13B0
+CameraOffset	= 85E8
+CameraOrigin	= 10
+CameraMatrix	= 1C
+CameraFov	= 40
+
+Player
+======
+LocalPlayer	= 141C2D0
+IsLooting	= 15121C4
+IsTexting	= 12A42F8
+MouseGuid	= 14A20C0
+TargetGuid	= 14A20D8
+
+Entity List
+===========
+EntityList	= 1387048
+FirstEntity	= 18
+NextEntity	= 58
+
+EntityType	= 18
+Descriptors	= 08
+GlobalID	= 00
+EntityID	= 14
+DynFlags	= 18
+
+Unit
+====
+UnitTransport	= 1038
+UnitOrigin	= 1040
+UnitAngle	= 1050
+UnitCasting	= 1608
+UnitChannel	= 1620
+UnitCreator	= 48
+UnitHealth	= 84
+UnitPower	= 88
+UnitHealthMax	= 9C
+UnitPowerMax	= A0
+UnitLevel	= DC
+UnitFlags	= F4
+
+NpcCache	= 11F0
+NpcName		= 0098
+
+Object
+======
+ObjectBobbing	= 178
+ObjectTransport	= 1B8
+ObjectOrigin	= 1C0
+ObjectRotation	= 1D0
+ObjectTransform	= 340
+ObjectCache	= 338
+ObjectName	= 0D0
+ObjectCreator	= 20
+ObjectDisplay	= 28
+
+Name Cache
+==========
+NameCacheBase	= 1351380
+NameCacheNext	= 00
+NameCacheGuid	= 10
+NameCacheName	= 19
+NameCacheRace	= 68
+NameCacheClass	= 70
+
+Chat System
+===========
+Position	= 14FDA58
+Buffer		= 14A4100
+MsgSize		= 17D0
+
+Message
+=======
+SenderGuid	= 0000
+SenderName	= 0014
+FullMessage	= 0045
+OnlyMessage	= 0BFD
+ChannelNumber	= 17B8
+TimeStamp	= 17C8
