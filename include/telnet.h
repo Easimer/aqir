@@ -4,4 +4,5 @@
  * EasimerNet-Confidental
  */
 #pragma once
-void x11_mclick(void);
+
+void * aqir_net_thread_func(void *); 

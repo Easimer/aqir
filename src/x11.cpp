@@ -1,3 +1,9 @@
+/*
+ * x11.cpp - XOrg functions
+ * Author: Daniel Meszaros <easimer@gmail.com>
+ * EasimerNet-Confidental
+ */
+
 #include <x11.h>
 #include <X11/extensions/XTest.h>
 #include <unistd.h>

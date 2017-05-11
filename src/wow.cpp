@@ -35,3 +35,9 @@ bool CWowPlayer::IsFishing(void)
 	uint8_t* f3 = (uint8_t*)(pbase + PLAYER_ISFISHING3);
 	return (*f2 && *f3);
 }
+
+bool CWowPlayer::IsBobberBobbing(void)
+{
+	uint32_t* bb1 = (uint32_t*)PLAYER_ISBOBBING1;
+	return *bb1;
+}
