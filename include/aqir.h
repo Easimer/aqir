@@ -7,4 +7,3 @@
 
 #define __stdcall __attribute__((__stdcall__))
 #define WINAPI __stdcall
-

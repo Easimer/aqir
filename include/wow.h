@@ -10,9 +10,19 @@
 class CWow {
 public:
 	static int ClntObjMgrGetActivePlayer(void);
+	
+	static uintptr_t GetObjMgrBase(void);
+	static uintptr_t GetObjMgr(void);
+	static uintptr_t GetObjMgrFirst(void);
+
 	static unsigned short GetGameBuild(void);
 	static uintptr_t GetPlayerPointer(void);
 	static bool IsPlayerInGame(void);
+	static bool IsPlayerLooting(void);
+
+	static void EnableBot(void);
+	static void DisableBot(void);
+	static bool IsBotEnabled(void);
 
 private:
 	const static uint64_t baseaddr = 0x140000000;
