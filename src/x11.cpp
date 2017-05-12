@@ -6,23 +6,120 @@
 
 #include <x11.h>
 #include <X11/extensions/XTest.h>
+ #include <X11/Intrinsic.h>
 #include <unistd.h>
 
-void x11_mclick(void)
+Display *x11_d = NULL;
+
+void x11_open(void)
 {
-	Display *d = XOpenDisplay(NULL);
-	if(!d)
+	if(x11_d)
+		return;
+	x11_d = XOpenDisplay(NULL);
+}
+
+void x11_close(void)
+{
+	if(!x11_d)
+		return;
+	XCloseDisplay(x11_d);
+	x11_d = NULL;
+}
+
+void x11_mclick(unsigned x, unsigned y)
+{
+	if(!x11_d)
+		x11_open();
+	if(!x11_d)
 		return;
 
-	for(unsigned x = 800; x < 1000; x+= 8)
+	XTestFakeMotionEvent(x11_d, 0, x, y, CurrentTime);
+	//XSync(x11_d, 0);
+	XTestFakeButtonEvent(x11_d, 3, 1, CurrentTime);
+	XTestFakeButtonEvent(x11_d, 3, 0, CurrentTime);
+	XSync(x11_d, 0);
+}
+
+void x11_kbkey(int key)
+{
+	if(!x11_d)
+		x11_open();
+	if(!x11_d)
+		return;
+
+	int kc;
+	switch(key)
 	{
-		for(unsigned y = 400; y < 600; y++)
-		{
-			XTestFakeMotionEvent(d, 0, x, y, CurrentTime);
-			XSync(d, 0);
-			XTestFakeButtonEvent(d, 3, 1, CurrentTime);
-			XTestFakeButtonEvent(d, 3, 0, CurrentTime);
-		}
+		case KEY_4:
+			kc = XK_4;
+			break;
+		case KEY_LSHIFT:
+			kc = XK_Shift_L;
+			break;
+		default:
+			return;
 	}
-	XCloseDisplay(d);
+
+	KeyCode keycode = 0;
+	keycode = XKeysymToKeycode(x11_d, kc);
+	XTestGrabControl(x11_d, 1);
+	XTestFakeKeyEvent(x11_d, keycode, 1, 0);
+	XTestFakeKeyEvent(x11_d, keycode, 0, 0);
+
+	XSync(x11_d, 0);
+	XTestGrabControl(x11_d, 0);
+}
+
+void x11_kbhold(int key)
+{
+	if(!x11_d)
+		x11_open();
+	if(!x11_d)
+		return;
+
+	int kc;
+	switch(key)
+	{
+		case KEY_4:
+			kc = XK_4;
+			break;
+		case KEY_LSHIFT:
+			kc = XK_Shift_L;
+			break;
+		default:
+			return;
+	}
+
+	KeyCode keycode = 0;
+	keycode = XKeysymToKeycode(x11_d, kc);
+	XTestGrabControl(x11_d, 1);
+	XTestFakeKeyEvent(x11_d, keycode, 1, 0);
+}
+
+void x11_kbrel(int key)
+{
+	if(!x11_d)
+		x11_open();
+	if(!x11_d)
+		return;
+
+	int kc;
+	switch(key)
+	{
+		case KEY_4:
+			kc = XK_4;
+			break;
+		case KEY_LSHIFT:
+			kc = XK_Shift_L;
+			break;
+		default:
+			return;
+	}
+
+	KeyCode keycode = 0;
+	keycode = XKeysymToKeycode(x11_d, kc);
+	XTestFakeKeyEvent(x11_d, keycode, 0, 0);
+
+	XSync(x11_d, 0);
+	XTestGrabControl(x11_d, 0);
 }
