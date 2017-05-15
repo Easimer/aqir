@@ -6,6 +6,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <obj.h>
+#include <string>
 
 class CWow {
 public:
@@ -24,6 +26,9 @@ public:
 	static void DisableBot(void);
 	static bool IsBotEnabled(void);
 
+	static uintptr_t GetEntityList(void);
+	static uintptr_t GetFirstEntityAddr(void);
+
 private:
 	const static uint64_t baseaddr = 0x140000000;
 };
@@ -34,19 +39,24 @@ public:
 	static bool IsFishing(void);
 	static bool IsInGame(void);
 	static bool IsBobberBobbing(void);
-};
 
-struct WowUnit {
-	uint64_t guid;
-	uint32_t id;
-	uint32_t flags1;
-	uint64_t creator;
-	uint32_t health;
-	uint32_t power;
-	uint32_t health_max;
-	uint32_t power_max;
-	uint32_t level;
-	uint32_t flags2;
+	static int GetX(void);
+	static int GetY(void);
+	static int GetZ(void);
+
+	static void SetX(int v);
+	static void SetY(int v);
+	static void SetZ(int v);
+
+	static unsigned _DEBUG_GetType(void);
+	static struct wow_unit_desc* GetPlayerDescriptor();
+
+	static std::string GetName(void);
+	static int GetHealth(void);
+	static int GetPower(void);
+	static int GetMaxHealth(void);
+	static int GetMaxPower(void);
+	static int GetLevel(void);
 };
 
 #define GAMEBUILD_OFF (0x1274FE4)
@@ -59,9 +69,14 @@ isBobbing
 */
 
 #define PLAYER_ISMOUNTED (0x1EBC)
-#define PLAYER_ISFISHING1 (0x14B1)
-#define PLAYER_ISFISHING2 (0x1621) // possible candidate
-#define PLAYER_ISFISHING3 (0x1627) // possible candidate
-#define PLAYER_ISFISHING4 (0x6F41)
+#define PLAYER_ISFISHING1 (0x1621) // possible candidate
+#define PLAYER_ISFISHING2 (0x1627) // possible candidate
 #define PLAYER_ISBOBBING1 (0x22a23c) // use this
 #define PLAYER_ISBOBBING2 (0x22a258)
+#define PLAYER_ISLOOTING (0x15121C4)
+#define PLAYER_X (0x1040)
+#define PLAYER_Y (0x1044)
+#define PLAYER_Z (0x1048)
+
+#define PLAYER_CACHE (4592)
+#define PLAYER_CACHE_NAME (152)

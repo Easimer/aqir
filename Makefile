@@ -6,7 +6,7 @@
 
 CC=g++
 CMFLAGS=
-CXXFLAGS=$(CMFLAGS) -std=c++1z -Wall -O2 -fPIC -I include/
+CXXFLAGS=$(CMFLAGS) -ggdb -std=c++1z -Wall -O1 -fPIC -I include/
 LDFLAGS=$(CMFLAGS) -shared -Bstatic -ldl -Bstatic -lpthread -Bstatic -lX11 -Bstatic -lXtst -Bstatic -lXext
 
 SOURCES=$(wildcard src/*.cpp)

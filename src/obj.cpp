@@ -12,5 +12,5 @@ CWowObject::CWowObject(uintptr_t baseaddr)
 
 uint64_t CWowObject::GetGUID(void)
 {
-	return *(uint64_t*)(baseaddr + 40);
+	return *reinterpret_cast<uint64_t*>(baseaddr + 40);
 }

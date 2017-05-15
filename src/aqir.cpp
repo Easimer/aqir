@@ -37,6 +37,21 @@ void throw_bobber(void)
 	sleep(1);
 }
 
+void fuck(void)
+{
+	std::cout << "Traversing the motherfucking entitylist" << std::endl;
+	uintptr_t obj;
+	obj = *(uintptr_t*)(0x141387048 + 0x18);
+	while(obj /*&& ((obj & 1) == 0)*/)
+	{
+		std::cout << "OBJ FOUND" << std::endl;
+		uintptr_t doff = *(uintptr_t*)(obj + 0x8);
+		uint8_t type = *(uint8_t*)(doff + 24);
+		std::cout << "Type: " << (unsigned)type << std::endl;
+	}
+	std::cout << "END" << std::endl;
+}
+
 static void * aqir_thread_func(void *param)
 {
 	// Wait; printing causes SIGSEGV for some reason
@@ -88,6 +103,8 @@ static void * aqir_thread_func(void *param)
 		exit(666);
 	}
 
+	//CXOrg win("World of Warcraft");
+
 	// acquire player base address
 
 	uintptr_t player;
@@ -123,6 +140,61 @@ static void * aqir_thread_func(void *param)
 	std::cout << std::dec << obj.GetGUID() << std::endl;*/
 
 	// TEST
+
+	while(!CWow::IsBotEnabled())
+		sleep(1);
+
+	std::cout << std::dec << CWowPlayer::GetX() << std::endl;
+	std::cout << std::dec << CWowPlayer::GetY() << std::endl;
+
+	//std::cout << CWowPlayer::GetName() << std::endl;
+	std::cout << "Level " << std::dec << CWowPlayer::GetLevel() << std::endl;
+
+	fuck();
+
+	//std::cout << "First entity" << std::endl;
+	//auto ent = reinterpret_cast<struct wow_ent*>(CWow::GetFirstEntityAddr());
+	//std::cout << "Entity type: " << std::hex << ent->type << std::endl;
+
+	while(true)
+	{
+		bool isMounted = CWowPlayer::IsMounted();
+		bool isFishing = CWowPlayer::IsFishing();
+		bool isLooting = CWow::IsPlayerLooting();
+
+		if(isMounted != wasMounted)
+		{
+			std::cout << "Player has " << (wasMounted ? "unmounted" : "mounted") << std::endl;
+			wasMounted = isMounted;
+		}
+		if(isFishing != wasFishing)
+		{
+			std::cout << "Player has " << (wasFishing ? "exited" : "entered") << " fishing state" << std::endl;
+			wasFishing = isFishing;
+		}
+		if(isLooting != wasLooting)
+		{
+			std::cout << "Player has " << (wasLooting ? "exited" : "entered") << " looting state" << std::endl;
+			wasLooting = isLooting;
+		}
+		if(!isFishing)
+			sleep(1);
+		else
+		{
+			sleep(1);
+		}
+		// watch if the player has logged out; avoid SIGSEGV
+		player2 = CWow::GetPlayerPointer();
+		if(!player2)
+		{
+			std::cout << "Player has logged out" << std::endl;
+			while(!(player = CWow::GetPlayerPointer()))
+				sleep(1);
+			std::cout << "Player has logged back" << std::endl;
+		}
+	}
+
+	return NULL;
 
 	while(1)
 	{
@@ -193,37 +265,6 @@ static void * aqir_thread_func(void *param)
 		std::cout << "bot: stop looting" << std::endl;
 
 		continue;
-
-		bool isMounted = CWowPlayer::IsMounted();
-		bool isFishing = CWowPlayer::IsFishing();
-		bool isLooting = CWow::IsPlayerLooting();
-
-		if(isMounted != wasMounted)
-		{
-			//std::cout << "Player has " << (wasMounted ? "unmounted" : "mounted") << std::endl;
-			wasMounted = isMounted;
-		}
-		if(isFishing != wasFishing)
-		{
-			//std::cout << "Player has " << (wasFishing ? "exited" : "entered") << " fishing state" << std::endl;
-			wasFishing = isFishing;
-		}
-		if(isLooting != wasLooting)
-		{
-			//std::cout << "Player has " << (wasLooting ? "exited" : "entered") << " looting state" << std::endl;
-			wasLooting = isLooting;
-		}
-		if(!isFishing)
-			sleep(1);
-		else
-		{
-			sleep(1);
-		}
-		// watch if the player has logged out; avoid SIGSEGV
-		player2 = CWow::GetPlayerPointer();
-		if(!player2)
-			while(!(player = CWow::GetPlayerPointer()))
-				sleep(1);
 	}
 
 	return NULL;
