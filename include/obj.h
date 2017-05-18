@@ -7,6 +7,7 @@
 
 #include <wow.h>
 #include <stdint.h>
+#include <memory>
 
 class CWowObject {
 public:
@@ -51,5 +52,59 @@ enum wow_obj_type {
 	O_PLAYER = 4,
 	O_GAMEOBJ = 5,
 	O_DYNOBJ = 6,
-	O_CORPSE = 7
+	O_CORPSE = 7,
+	O_ANY = 0xFF
 };
+
+namespace wow {
+
+class obj {
+public:
+	obj(void);
+	obj(uintptr_t& baseaddr);
+
+	void setbase(uintptr_t addr);
+
+
+protected:
+	uintptr_t baseaddr;
+};
+
+class item : public obj {
+
+};
+
+class container : public obj {
+
+};
+
+class unit : public obj {
+
+};
+
+class player : public obj {
+
+};
+
+class gameobj : public obj {
+public:
+	gameobj(void);
+	gameobj(uintptr_t& baseaddr);
+	bool isbobbing(void);
+	float getx(void);
+	float gety(void);
+	float getz(void);
+	uint64_t getrotation(void);
+
+};
+
+class objmgr {
+public:
+	objmgr(void);
+	uintptr_t GetObjectByName(const char* name);
+	uintptr_t GetObjectByName(const char* name, uint type);
+private:
+	uintptr_t base;
+};
+
+}

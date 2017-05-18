@@ -6,12 +6,14 @@
 #include <aqir.h>
 #include <wow.h>
 #include <x11.h>
- #include <obj.h>
+#include <obj.h>
+#include <utils.h>
 
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <cstring>
-#include <time.h>
+#include <ctime>
 
 pthread_t aqir_thread;
 pthread_t aqir_net_thread;
@@ -39,17 +41,30 @@ void throw_bobber(void)
 
 void fuck(void)
 {
-	std::cout << "Traversing the motherfucking entitylist" << std::endl;
-	uintptr_t obj;
-	obj = *(uintptr_t*)(0x141387048 + 0x18);
-	while(obj /*&& ((obj & 1) == 0)*/)
+	uintptr_t EntityList = *reinterpret_cast<uintptr_t*>(BASEADDR + ENTLIST);
+	uintptr_t FirstEntity = *reinterpret_cast<uintptr_t*>(EntityList + OBJMGR_0);
+	uintptr_t EntityPtr = FirstEntity;
+	while((EntityPtr != 0) && ((EntityPtr & 1) == 0) && IsPointerValid(EntityPtr))
 	{
-		std::cout << "OBJ FOUND" << std::endl;
-		uintptr_t doff = *(uintptr_t*)(obj + 0x8);
-		uint8_t type = *(uint8_t*)(doff + 24);
-		std::cout << "Type: " << (unsigned)type << std::endl;
+		uintptr_t cache;
+		char* name;
+
+		uint64_t type = READ_UINT64(EntityPtr + 0x18);
+		if(type != 5)
+			goto cont;
+
+		cache = *reinterpret_cast<uintptr_t*>(EntityPtr + 824);
+		std::cout << "Cache: " << std::hex << cache << std::endl;
+		name = *reinterpret_cast<char**>(cache + 208);
+		std::cout << "Name: " << std::hex << (uintptr_t)name << std::endl;
+
+
+		std::cout << "=========" << std::endl;
+		std::cout << name << std::endl;
+
+		cont:
+		EntityPtr = *reinterpret_cast<uintptr_t*>(EntityPtr + OBJMGR_N);
 	}
-	std::cout << "END" << std::endl;
 }
 
 static void * aqir_thread_func(void *param)
@@ -65,6 +80,8 @@ static void * aqir_thread_func(void *param)
 	std::cout << "Linked to process: " << p << std::endl;
 
 	// Read process name
+
+	// TODO: C++-ify this
 
 	char fnamebuf[256];
 	char pnamebuf[256];
@@ -88,6 +105,8 @@ static void * aqir_thread_func(void *param)
 		std::cout << "This is not WoW!!!" << std::endl;
 		pthread_exit(NULL);
 	}
+
+	//
 
 	std::cout << "Process name: " << exename << std::endl;
 
@@ -141,8 +160,12 @@ static void * aqir_thread_func(void *param)
 
 	// TEST
 
-	while(!CWow::IsBotEnabled())
-		sleep(1);
+	/*while(!CWow::IsBotEnabled())
+		sleep(1);*/
+
+	sleep(2);
+
+	//wow::objmgr om;
 
 	std::cout << std::dec << CWowPlayer::GetX() << std::endl;
 	std::cout << std::dec << CWowPlayer::GetY() << std::endl;
@@ -150,11 +173,16 @@ static void * aqir_thread_func(void *param)
 	//std::cout << CWowPlayer::GetName() << std::endl;
 	std::cout << "Level " << std::dec << CWowPlayer::GetLevel() << std::endl;
 
-	fuck();
+	while(!CWow::IsBotEnabled())
+		sleep(1);
 
 	//std::cout << "First entity" << std::endl;
 	//auto ent = reinterpret_cast<struct wow_ent*>(CWow::GetFirstEntityAddr());
 	//std::cout << "Entity type: " << std::hex << ent->type << std::endl;
+
+	wow::objmgr om;
+	wow::gameobj bobber;
+	bool hasbobber = false;
 
 	while(true)
 	{
@@ -170,6 +198,26 @@ static void * aqir_thread_func(void *param)
 		if(isFishing != wasFishing)
 		{
 			std::cout << "Player has " << (wasFishing ? "exited" : "entered") << " fishing state" << std::endl;
+			if(!wasFishing)
+			{
+				sleep(1);
+				const char* fbn = "Fishing Bobber";
+				uintptr_t bobberaddr = om.GetObjectByName(fbn, O_ANY);
+				if(bobberaddr)
+				{
+					std::cout << "Bobber found" << std::endl;
+					bobber = wow::gameobj(bobberaddr);
+					hasbobber = true;
+				}
+				else
+				{
+					std::cout << "Bobber not found" << std::endl;
+				}
+			}
+			if(wasFishing)
+			{
+				hasbobber = false;
+			}
 			wasFishing = isFishing;
 		}
 		if(isLooting != wasLooting)
@@ -181,6 +229,14 @@ static void * aqir_thread_func(void *param)
 			sleep(1);
 		else
 		{
+			if(hasbobber)
+			{
+				std::cout << "check bobbing" << std::endl;
+				if(bobber.isbobbing())
+				{
+					std::cout << "CLICK!!!" << std::endl;
+				}
+			}
 			sleep(1);
 		}
 		// watch if the player has logged out; avoid SIGSEGV

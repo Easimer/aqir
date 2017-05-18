@@ -62,16 +62,10 @@ public:
 #define GAMEBUILD_OFF (0x1274FE4)
 #define PLAYERPTR_OFF (0x141C2D0)
 
-/* 
-isBobbing
-[ 0]       22a23c,  2 +        f823c,  misc, 0, [I32 I16 I8 ]
-[ 1]       22a258,  2 +        f8258,  misc, 0, [I64 I32 I16 I8 ]
-*/
-
 #define PLAYER_ISMOUNTED (0x1EBC)
 #define PLAYER_ISFISHING1 (0x1621) // possible candidate
 #define PLAYER_ISFISHING2 (0x1627) // possible candidate
-#define PLAYER_ISBOBBING1 (0x22a23c) // use this
+#define PLAYER_ISBOBBING1 (0x22a23c)
 #define PLAYER_ISBOBBING2 (0x22a258)
 #define PLAYER_ISLOOTING (0x15121C4)
 #define PLAYER_X (0x1040)
@@ -80,3 +74,10 @@ isBobbing
 
 #define PLAYER_CACHE (4592)
 #define PLAYER_CACHE_NAME (152)
+
+#define BASEADDR (0x140000000)
+#define CLIENTCONN (0x009BE678)
+#define OBJMGR (0x463C)
+#define OBJMGR_0 (0x18)
+#define OBJMGR_N (0x58)
+#define ENTLIST (0x1387048)

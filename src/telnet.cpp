@@ -175,17 +175,27 @@ void telnet_process_command(int fd, std::string& cmd)
 
 			buf << std::hex;
 
+			bool sent = false;
+
 			for(size_t i = 0; i < size; i++)
 			{
 				uint8_t byte = reinterpret_cast<uint8_t*>(addr)[i];
-				buf << std::to_string(byte) << ' ';
+				buf << std::hex << (unsigned)byte << ' ';
+				if((i & 15) == 0)
+					sent = false;
 				if((i & 15) == 15)
 				{
 					buf << std::endl;
 					std::string s = buf.str();
 					send(fd, s.c_str(), s.size(), 0);
 					buf.clear();
+					sent = true;
 				}
+			}
+			if(!sent)
+			{
+				std::string s = buf.str();
+				send(fd, s.c_str(), s.size(), 0);
 			}
 
 		}
