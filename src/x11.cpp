@@ -38,9 +38,15 @@ void x11_mclick(unsigned x, unsigned y)
 		return;
 
 	XTestFakeMotionEvent(x11_d, 0, x, y, CurrentTime);
-	//XSync(x11_d, 0);
+	XSync(x11_d, 0);
 	XTestFakeButtonEvent(x11_d, 3, 1, CurrentTime);
 	XTestFakeButtonEvent(x11_d, 3, 0, CurrentTime);
+	XSync(x11_d, 0);
+}
+
+void x11_mmove(unsigned x, unsigned y)
+{
+	XTestFakeMotionEvent(x11_d, 0, x, y, CurrentTime);
 	XSync(x11_d, 0);
 }
 
@@ -126,81 +132,4 @@ void x11_kbrel(int key)
 
 	XSync(x11_d, 0);
 	XTestGrabControl(x11_d, 0);
-}
-
-CXOrg::CXOrg(std::string window_name)
-{
-	m_pDisplay = XOpenDisplay(NULL);
-
-	if(!m_pDisplay)
-	{
-		throw std::runtime_error("Cannot open X11 display!!");
-	}
-
-	Atom a = XInternAtom(m_pDisplay, "_NET_CLIENT_LIST", true);
-	Atom actualType;
-	int format;
-	unsigned long numItems, bytesAfter;
-	unsigned char *data = NULL;
-	int status = XGetWindowProperty(m_pDisplay, DefaultRootWindow(m_pDisplay), a, 0L, (~0L), false,
-                                AnyPropertyType, &actualType, &format, &numItems,
-                                &bytesAfter, &data);
-	if(status >= Success && numItems)
-	{
-		std::cout << "Searching" << std::endl;
-		long *array = reinterpret_cast<long*>(data);
-		for (unsigned long k = 0; k < numItems; k++)
-		{
-			Window w = (Window) array[k];
-			char* name = NULL;
-			status = XFetchName(m_pDisplay, w, &name);
-			if(status >= Success)
-			{
-				if(strcmp(name, window_name.c_str()) == 0)
-				{
-					m_iWindow = w;
-					XFree(name);
-					XFree(data);
-					std::cout << "Window found " << std::endl;
-					return;
-				}
-			}
-			XFree(name);
-		}
-		XFree(data);
-	}
-	else
-	{
-		throw std::runtime_error("XGetWindowProperty failed");
-	}
-}
-
-CXOrg::~CXOrg(void)
-{
-	XCloseDisplay(m_pDisplay);
-}
-
-void CXOrg::MouseClick(unsigned t, unsigned x, unsigned y)
-{
-	XButtonEvent ev;
-	ev.button = t;
-	ev.display = m_pDisplay;
-	ev.window = m_iWindow;
-	ev.x = x;
-	ev.y = y;
-
-	//XSendEvent(m_pDisplay, m_iWindow, 1, ButtonPressMask, reinterpret_cast<XEvent*>(&ev));
-
-	// first we release the button
-	ev.type = ButtonRelease;
-	XEV_SEND_MB(ev);
-
-	// then press
-
-	ev.type = ButtonPress;
-	XEV_SEND_MB(ev);
-
-	// finally, release
-	ev.type = ButtonRelease;
-	XEV_SEND_MB(ev);
 }

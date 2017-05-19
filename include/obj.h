@@ -7,15 +7,6 @@
 
 #include <wow.h>
 #include <stdint.h>
-#include <memory>
-
-class CWowObject {
-public:
-	CWowObject(uintptr_t baseaddr);
-	uint64_t GetGUID(void);
-private:
-	uintptr_t baseaddr;
-};
 
 struct wow_unit_desc {
 	uint64_t guid;
@@ -94,17 +85,12 @@ public:
 	float getx(void);
 	float gety(void);
 	float getz(void);
+	void setx(float v);
+	void sety(float v);
+	void setz(float v);
+	uint64_t getguid(void);
 	uint64_t getrotation(void);
 
-};
-
-class objmgr {
-public:
-	objmgr(void);
-	uintptr_t GetObjectByName(const char* name);
-	uintptr_t GetObjectByName(const char* name, uint type);
-private:
-	uintptr_t base;
 };
 
 }

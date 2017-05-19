@@ -6,6 +6,8 @@
 
 #include <aqir.h>
 #include <wow.h>
+#include <player.h>
+#include <camera.h>
 #include <x11.h>
 #include <telnet.h>
 #include <iostream>
@@ -135,12 +137,12 @@ void telnet_process_command(int fd, std::string& cmd)
 		}
 		if(tok[0] == "enable")
 		{
-			CWow::EnableBot();
+			wow::game::EnableBot();
 			std::cout << "network: bot enabled remotely" << std::endl;
 		}
 		else if(tok[0] == "disable")
 		{
-			CWow::DisableBot();
+			wow::game::DisableBot();
 			std::cout << "network: bot disabled remotely" << std::endl;
 		}
 		else if(tok[0] == "testkey")
@@ -211,13 +213,25 @@ void telnet_process_command(int fd, std::string& cmd)
 		}
 		else if(tok[0] == "pos")
 		{
-			std::cout << "Player position: " << std::dec << CWowPlayer::GetX() << ' '
-				<< std::dec << CWowPlayer::GetY() << ' '
-				<< std::dec << CWowPlayer::GetZ() << std::endl;
+			float ppos[3];
+			float cpos[3];
+
+			ppos[0] = wow::localplayer::GetX();
+			ppos[1] = wow::localplayer::GetY();
+			ppos[2] = wow::localplayer::GetZ();
+			
+			wow::camera::GetPosition(cpos);
+
+			std::cout << "Player: " << ppos[0] << ' ' << ppos[1] << ' ' << ppos[2] << std::endl;
+			std::cout << "Camera: " << cpos[0] << ' ' << cpos[1] << ' ' << cpos[2] << std::endl;
 		}
 		else if(tok[0] == "jump")
 		{
-			CWowPlayer::SetZ(CWowPlayer::GetZ() + 1572418);
+			wow::localplayer::SetZ(wow::localplayer::GetZ() + 10.f);
+		}
+		else if(tok[0] == "descend")
+		{
+			wow::localplayer::SetZ(wow::localplayer::GetZ() - 10.f);
 		}
 		else
 		{

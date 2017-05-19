@@ -5,9 +5,12 @@
  */
 #include <aqir.h>
 #include <wow.h>
+#include <objmgr.h>
+#include <player.h>
 #include <x11.h>
 #include <obj.h>
 #include <utils.h>
+#include <camera.h>
 
 #include <iostream>
 #include <fstream>
@@ -112,7 +115,7 @@ static void * aqir_thread_func(void *param)
 
 	// wait; otherwise the X11 window would get in an invalid state for some reason
 	sleep(10);
-	std::cout << "WoW build: " << CWow::GetGameBuild() << std::endl;
+	std::cout << "WoW build: " << wow::game::GetGameBuild() << std::endl;
 	std::cout << "=============" << std::endl;
 
 	std::cout << "Initializing telnet shell" << std::endl;
@@ -128,7 +131,7 @@ static void * aqir_thread_func(void *param)
 
 	uintptr_t player;
 	uintptr_t player2;
-	while(!(player = CWow::GetPlayerPointer()))
+	while(!(player = wow::game::GetPlayerPointer()))
 	{
 		sleep(1);
 	}
@@ -137,58 +140,34 @@ static void * aqir_thread_func(void *param)
 
 	srand(time(NULL)); // seed RNG
 
-	// initialize these variables
-
-	bool wasMounted = CWowPlayer::IsMounted();
-	bool wasFishing = CWowPlayer::IsFishing();
-	bool wasLooting = CWow::IsPlayerLooting();
-
-	unsigned wait_time = 0xFF;
-
-
-	// TEST
-
-	/*sleep(5);
-
-	uintptr_t objcur = CWow::GetObjMgrFirst();
-	if(objcur == NULL)
-	{
-		std::cout << "AAAAAAAAAAAH" << std::endl;
-	}
-	CWowObject obj(objcur);
-	std::cout << std::dec << obj.GetGUID() << std::endl;*/
-
-	// TEST
-
-	/*while(!CWow::IsBotEnabled())
-		sleep(1);*/
-
-	sleep(2);
-
-	//wow::objmgr om;
-
-	std::cout << std::dec << CWowPlayer::GetX() << std::endl;
-	std::cout << std::dec << CWowPlayer::GetY() << std::endl;
-
-	//std::cout << CWowPlayer::GetName() << std::endl;
-	std::cout << "Level " << std::dec << CWowPlayer::GetLevel() << std::endl;
-
-	while(!CWow::IsBotEnabled())
+	while(!wow::game::IsBotEnabled())
 		sleep(1);
 
-	//std::cout << "First entity" << std::endl;
-	//auto ent = reinterpret_cast<struct wow_ent*>(CWow::GetFirstEntityAddr());
-	//std::cout << "Entity type: " << std::hex << ent->type << std::endl;
+	// initialize these variables
+
+	bool wasMounted = wow::localplayer::IsMounted();
+	bool wasFishing = wow::localplayer::IsFishing();
+	bool wasLooting = wow::localplayer::IsLooting();
 
 	wow::objmgr om;
 	wow::gameobj bobber;
 	bool hasbobber = false;
+	bool fired = false;
+	int mx = -1; int my = -1;
 
 	while(true)
 	{
-		bool isMounted = CWowPlayer::IsMounted();
-		bool isFishing = CWowPlayer::IsFishing();
-		bool isLooting = CWow::IsPlayerLooting();
+		while(!wow::game::IsBotEnabled())
+			sleep(1);
+
+		bool isMounted = wow::localplayer::IsMounted();
+		bool isFishing = wow::localplayer::IsFishing();
+		bool isLooting = wow::localplayer::IsLooting();
+
+		if(!isFishing)
+		{
+			x11_kbkey(KEY_4);
+		}
 
 		if(isMounted != wasMounted)
 		{
@@ -202,7 +181,7 @@ static void * aqir_thread_func(void *param)
 			{
 				sleep(1);
 				const char* fbn = "Fishing Bobber";
-				uintptr_t bobberaddr = om.GetObjectByName(fbn, O_ANY);
+				uintptr_t bobberaddr = om.GetOwnedObjectByName(fbn, O_ANY);
 				if(bobberaddr)
 				{
 					std::cout << "Bobber found" << std::endl;
@@ -231,30 +210,63 @@ static void * aqir_thread_func(void *param)
 		{
 			if(hasbobber)
 			{
-				std::cout << "check bobbing" << std::endl;
 				if(bobber.isbobbing())
 				{
-					std::cout << "CLICK!!!" << std::endl;
+					if(!fired)
+					{
+						float bpos[3]; float spos[2];
+
+						fired = true;
+
+						bpos[0] = bobber.getx();
+						bpos[1] = bobber.gety();
+						bpos[2] = bobber.getz();
+
+						wow::camera::WorldToScreen(bpos, spos);
+
+						mx = spos[0];
+						my = spos[1];
+
+						if(mx > -1 && my > -1)
+						{
+							x11_open();
+							x11_kbhold(KEY_LSHIFT);
+							x11_mclick(mx, my);
+							x11_kbrel(KEY_LSHIFT);
+							x11_close();
+						}
+						else
+						{
+							std::cerr << "[!!!] Bobber was out of view, please correct the camera angles" << std::endl;
+						}
+						sleep(1);
+						
+					}
 				}
 			}
 			sleep(1);
 		}
 		// watch if the player has logged out; avoid SIGSEGV
-		player2 = CWow::GetPlayerPointer();
+		player2 = wow::game::GetPlayerPointer();
 		if(!player2)
 		{
 			std::cout << "Player has logged out" << std::endl;
-			while(!(player = CWow::GetPlayerPointer()))
+			while(!(player = wow::game::GetPlayerPointer()))
 				sleep(1);
 			std::cout << "Player has logged back" << std::endl;
+		}
+		if(fired)
+		{
+			sleep(1);
+			fired = false;
 		}
 	}
 
 	return NULL;
-
+/*
 	while(1)
 	{
-		if(!CWow::IsBotEnabled())
+		if(!wow::game::IsBotEnabled())
 		{
 			sleep(1);
 			continue;
@@ -322,6 +334,6 @@ static void * aqir_thread_func(void *param)
 
 		continue;
 	}
-
+*/
 	return NULL;
 }

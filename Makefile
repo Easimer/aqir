@@ -5,8 +5,9 @@
 #
 
 CC=g++
-CMFLAGS=
-CXXFLAGS=$(CMFLAGS) -ggdb -std=c++1z -Wall -O1 -fPIC -I include/
+CMFLAGS=-flto
+INCLUDES=-I include/
+CXXFLAGS=$(CMFLAGS) -ggdb -std=c++1z -Wall -O2 -fPIC -mtune=native -march=native $(INCLUDES)
 LDFLAGS=$(CMFLAGS) -shared -Bstatic -ldl -Bstatic -lpthread -Bstatic -lX11 -Bstatic -lXtst -Bstatic -lXext
 
 SOURCES=$(wildcard src/*.cpp)
