@@ -8,6 +8,7 @@
 #include <cstring>
 #include <utils.h>
 #include <player.h>
+#include <obj.h>
 
 namespace wow {
 	objmgr::objmgr(void)
@@ -87,5 +88,29 @@ namespace wow {
 				return 0;
 		}
 		return 0;
+	}
+
+	std::vector<uintptr_t> objmgr::GetPlayers(void)
+	{
+		std::vector<uintptr_t> players;
+
+		uintptr_t EntityList = *reinterpret_cast<uintptr_t*>(base);
+		uintptr_t FirstEntity = *reinterpret_cast<uintptr_t*>(EntityList + OBJMGR_0);
+		uintptr_t EntityPtr = FirstEntity;
+		while((EntityPtr != 0) && ((EntityPtr & 1) == 0) && IsPointerValid(EntityPtr))
+		{
+			uint64_t type = READ_UINT64(EntityPtr + 0x18);
+			if(type != O_PLAYER)
+				goto cont;
+
+			players.push_back(EntityPtr);
+
+			cont:
+			if(IsPointerValid(EntityPtr + OBJMGR_N))
+				EntityPtr = *reinterpret_cast<uintptr_t*>(EntityPtr + OBJMGR_N);
+			else
+				break;
+		}
+		return players;
 	}
 }

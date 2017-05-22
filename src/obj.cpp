@@ -5,6 +5,7 @@
  */
 #include <obj.h>
 #include <utils.h>
+#include <iostream>
 
 namespace wow {
 
@@ -64,5 +65,78 @@ namespace wow {
 	uint64_t gameobj::getguid(void)
 	{
 		return *reinterpret_cast<uint64_t*>(*reinterpret_cast<uintptr_t*>(baseaddr + 0x08));
+	}
+
+	player::player(void) : gameobj() {}
+	player::player(uintptr_t& baseaddr) : gameobj(baseaddr) {}
+
+	bool player::isbobbing(void)
+	{
+		return false;
+	}
+
+	float player::getx(void)
+	{
+		return *reinterpret_cast<float*>(baseaddr + 4160);
+	}
+
+	float player::gety(void)
+	{
+		return *reinterpret_cast<float*>(baseaddr + 4164);
+	}
+
+	float player::getz(void)
+	{
+		return *reinterpret_cast<float*>(baseaddr + 4168);
+	}
+
+	void player::setx(float v)
+	{
+		*reinterpret_cast<float*>(baseaddr + 4160) = v;
+	}
+	
+	void player::sety(float v)
+	{
+		*reinterpret_cast<float*>(baseaddr + 4164) = v;
+	}
+
+	void player::setz(float v)
+	{
+		*reinterpret_cast<float*>(baseaddr + 4168) = v;
+	}
+
+	uint64_t player::getguid(void)
+	{
+		return *reinterpret_cast<uint64_t*>(*reinterpret_cast<uintptr_t*>(baseaddr + 0x08));
+	}
+
+	std::string player::name(void)
+	{
+		std::string pname = "(error)";
+		if(!IsPointerValid(baseaddr + 4592))
+		{
+			std::cerr << __LINE__ << std::endl;
+			return pname;
+		}
+		uintptr_t cacheptr = *reinterpret_cast<uintptr_t*>(baseaddr + 4592);
+		if(!IsPointerValid(cacheptr))
+		{
+			std::cerr << __LINE__ << std::endl;
+			return pname;
+		}
+		// that struct has a pointer @152 that points to the name string
+		if(!IsPointerValid(cacheptr + 152))
+		{
+			std::cerr << __LINE__ << std::endl;
+			return pname;
+		}
+		uintptr_t namestructptr = *reinterpret_cast<uintptr_t*>(cacheptr + 152);
+		if(!IsPointerValid(namestructptr))
+		{
+			std::cerr << __LINE__ << std::endl;
+			return pname;
+		}
+		pname = std::string((char*)namestructptr);
+		return pname;
 	}
 }

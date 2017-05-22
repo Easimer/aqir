@@ -9,6 +9,7 @@
 #include <player.h>
 #include <camera.h>
 #include <x11.h>
+#include <objmgr.h>
 #include <telnet.h>
 #include <iostream>
 #include <cstring>
@@ -22,6 +23,16 @@
 #include <iterator>
 
 void telnet_process_client(int fd);
+
+int aqir_net_ls = 0, aqir_net_cs = 0;
+
+void aqir_net_fini(void)
+{
+	if(aqir_net_ls)
+		close(aqir_net_ls);
+	if(aqir_net_cs)
+		close(aqir_net_cs);
+}
 
 void * aqir_net_thread_func(void *param)
 {
@@ -72,6 +83,8 @@ void * aqir_net_thread_func(void *param)
 		return NULL;
 	}
 
+	aqir_net_ls = sockfd;
+
 	std::cout << "network: accepting connections" << std::endl;
 
 	while(true)
@@ -84,9 +97,13 @@ void * aqir_net_thread_func(void *param)
 		// accept connection
 		clientfd = accept(sockfd, reinterpret_cast<struct sockaddr*>(&client_addr), &addrlen);
 		std::cout << "network: client " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " connected"  << std::endl;
+		aqir_net_cs = clientfd;
 		telnet_process_client(clientfd);
 		close(clientfd);
+		aqir_net_cs = 0;
 	}
+
+	aqir_net_ls = 0;
 
 }
 
@@ -232,6 +249,26 @@ void telnet_process_command(int fd, std::string& cmd)
 		else if(tok[0] == "descend")
 		{
 			wow::localplayer::SetZ(wow::localplayer::GetZ() - 10.f);
+		}
+		else if(tok[0] == "players")
+		{
+			wow::objmgr om;
+			std::vector<uintptr_t> players = om.GetPlayers();
+			for(auto& pplayer : players)
+			{
+				wow::player p(pplayer);
+				std::string buf;
+				std::stringstream res;
+				res << p.name() << "\n(" << p.getx() << ',' << p.gety() << ',' << p.getz() << ')' << std::endl;
+				buf = res.str();
+				send(fd, buf.c_str(), buf.size(), 0);
+			}
+		}
+		else if(tok[0] == "whoami")
+		{
+			auto name = wow::localplayer::GetName();
+			name.append("\n");
+			send(fd, name.c_str(), name.size(), 0);
 		}
 		else
 		{

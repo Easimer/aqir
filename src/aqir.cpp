@@ -11,6 +11,7 @@
 #include <obj.h>
 #include <utils.h>
 #include <camera.h>
+#include <telnet.h>
 
 #include <iostream>
 #include <fstream>
@@ -18,11 +19,23 @@
 #include <cstring>
 #include <ctime>
 
-pthread_t aqir_thread;
-pthread_t aqir_net_thread;
-
+#ifndef AQIR_LOADED
 static void aqir_init(void) __attribute__((constructor));
-static void * aqir_thread_func(void *);
+#else
+#warning "Using Aqir Loaded, .so won't init itself on load"
+#endif
+
+static void aqir_fini(void) __attribute__((destructor));
+
+extern "C" {
+	pthread_t aqir_thread;
+	pthread_t aqir_net_thread;
+
+	const int aqir_version_ = 1;
+	const int* aqir_version = &aqir_version_;
+	const char* aqir_version_str = "Aqir 0.1.1 by easimer";
+	void * aqir_thread_func(void *);
+}
 
 extern void * aqir_net_thread_func(void *); 
 
@@ -34,48 +47,24 @@ static void aqir_init(void)
 	}
 }
 
-void throw_bobber(void)
+static void aqir_fini(void)
 {
-	x11_open();
-	x11_kbkey(KEY_4);
+	pthread_cancel(aqir_net_thread);
+	pthread_join(aqir_net_thread, NULL);
+	aqir_net_fini();
 	x11_close();
-	sleep(1);
 }
 
-void fuck(void)
+void * aqir_thread_func(void *param)
 {
-	uintptr_t EntityList = *reinterpret_cast<uintptr_t*>(BASEADDR + ENTLIST);
-	uintptr_t FirstEntity = *reinterpret_cast<uintptr_t*>(EntityList + OBJMGR_0);
-	uintptr_t EntityPtr = FirstEntity;
-	while((EntityPtr != 0) && ((EntityPtr & 1) == 0) && IsPointerValid(EntityPtr))
-	{
-		uintptr_t cache;
-		char* name;
-
-		uint64_t type = READ_UINT64(EntityPtr + 0x18);
-		if(type != 5)
-			goto cont;
-
-		cache = *reinterpret_cast<uintptr_t*>(EntityPtr + 824);
-		std::cout << "Cache: " << std::hex << cache << std::endl;
-		name = *reinterpret_cast<char**>(cache + 208);
-		std::cout << "Name: " << std::hex << (uintptr_t)name << std::endl;
-
-
-		std::cout << "=========" << std::endl;
-		std::cout << name << std::endl;
-
-		cont:
-		EntityPtr = *reinterpret_cast<uintptr_t*>(EntityPtr + OBJMGR_N);
-	}
-}
-
-static void * aqir_thread_func(void *param)
-{
+	#ifndef AQIR_LOADED
 	// Wait; printing causes SIGSEGV for some reason
 	sleep(5);
+	#endif
 	std::cout << "=============" << std::endl;
 	std::cout << ".:: Aqir by easimer ::." << std::endl;
+
+	#ifndef AQIR_LOADED
 
 	// Read PID
 
@@ -112,6 +101,8 @@ static void * aqir_thread_func(void *param)
 	//
 
 	std::cout << "Process name: " << exename << std::endl;
+
+	#endif /* AQIR_LOADED */
 
 	// wait; otherwise the X11 window would get in an invalid state for some reason
 	sleep(10);
@@ -261,79 +252,5 @@ static void * aqir_thread_func(void *param)
 			fired = false;
 		}
 	}
-
-	return NULL;
-/*
-	while(1)
-	{
-		if(!wow::game::IsBotEnabled())
-		{
-			sleep(1);
-			continue;
-		}
-
-		sleep(2); // GCD, etc.		
-
-		if(wait_time == 0xFF)
-		{
-			std::cout << "bot: train first" << std::endl;
-			for(int i = 0; i < 3; i++)
-			{
-				throw_bobber();
-				time_t start = time(NULL);
-				while(CWowPlayer::IsFishing());
-				time_t end =  time(NULL) - start + 1;
-				if(wait_time > end)
-				{
-					wait_time = end;
-				}
-				std::cout << end << std::endl;
-				sleep(2);
-			}
-
-			wait_time = wait_time;
-			
-			std::cout << "bot: train res: " << wait_time << std::endl;
-			continue;
-		}
-
-		std::cout << "bot: throw bobber" << std::endl;
-		throw_bobber();
-
-		std::cout << "bot: wait..." << std::endl;
-		sleep(wait_time + ((rand() % 4) - 2) - 3);
-
-		std::cout << "bot: begin looting" << std::endl;
-		x11_open();
-
-		bool looting = false;
-
-		x11_kbhold(KEY_LSHIFT);
-
-		for(unsigned y = 440; y < 640; y+= 2)
-		{
-			for(unsigned x = 660; x < 1160; x+= 2)
-			{
-				x11_mclick(x, y);
-				looting = CWow::IsPlayerLooting();
-				if(looting) break;
-			}
-			if(looting) break;
-		}
-
-		if(looting)
-		{
-			sleep(1);
-			std::cout << "bot: loot" << std::endl;
-		}
-
-		x11_kbrel(KEY_LSHIFT);
-
-		x11_close();
-		std::cout << "bot: stop looting" << std::endl;
-
-		continue;
-	}
-*/
 	return NULL;
 }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 #define BASEADDR (0x140000000)
 #define ENTLIST (0x1387048)
@@ -20,6 +21,7 @@ namespace wow {
 		uintptr_t GetObjectByName(const char* name);
 		uintptr_t GetObjectByName(const char* name, unsigned type);
 		uintptr_t GetOwnedObjectByName(const char* name, unsigned type);
+		std::vector<uintptr_t> GetPlayers(void);
 	private:
 		uintptr_t base;
 	};

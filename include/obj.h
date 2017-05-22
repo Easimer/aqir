@@ -7,6 +7,7 @@
 
 #include <wow.h>
 #include <stdint.h>
+#include <string>
 
 struct wow_unit_desc {
 	uint64_t guid;
@@ -73,10 +74,6 @@ class unit : public obj {
 
 };
 
-class player : public obj {
-
-};
-
 class gameobj : public obj {
 public:
 	gameobj(void);
@@ -93,4 +90,35 @@ public:
 
 };
 
+class player : public gameobj {
+public:
+	player(void);
+	player(uintptr_t& baseaddr);
+	bool isbobbing(void);
+	float getx(void);
+	float gety(void);
+	float getz(void);
+	void setx(float v);
+	void sety(float v);
+	void setz(float v);
+	uint64_t getguid(void);
+	uint64_t getrotation(void);
+	std::string name(void);
+};
+
 }
+
+#define UNIT_OFF_DESC 0x8
+#define UNIT_OFF_DESC_FLAGSD 24
+#define UNIT_OFF_DESC_CREATOR 72
+#define UNIT_OFF_DESC_HEALTH 132
+#define UNIT_OFF_DESC_POWER 136
+#define UNIT_OFF_DESC_HEALTHM 156
+#define UNIT_OFF_DESC_POWERM 160
+#define UNIT_OFF_DESC_LEVEL 220
+#define UNIT_OFF_POSX 4160
+#define UNIT_OFF_POSY 4164
+#define UNIT_OFF_POSZ 4168
+#define UNIT_OFF_ROT 4176
+#define UNIT_OFF_CASTING 5640
+#define UNIT_OFF_CHANNELING 5664
