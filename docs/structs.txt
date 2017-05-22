@@ -1,0 +1,54 @@
+WoW 5.4.8 18414 x64
+Structure definitions
+
+==========================================================
+
+Help:
+struct typename_t {
+	offset: type_t name;
+	offset: type_t name;
+	...
+	offset: type_t name;
+};
+
+ptr_t is 8 bytes raw pointer
+float is 4 bytes, double is 8 bytes
+u32 is 4 bytes, u64 is 8 bytes
+i32 is 4 bytes signed, i64 is 8 bytes signed
+
+==========================================================
+
+struct pos_t {
+	0x0: float posx;
+	0x4: float posy;
+	0x8: float posy;
+};
+
+struct camera_t {
+	0x10: pos_t position;
+	0x1C: pos_t direction;
+	0x1C: float[3][3] view_matrix;
+	0x40: float fov_deg;
+};
+
+struct unit_t {
+	0x8: unit_desc_t* desc;
+	0x18: u32 type;
+	0x1038: ptr_t transport;
+	0x1040: pos_t position;
+	0x1050: float angle; // in deg I guess
+	0x1060: ptr_t unit_cache;
+};
+
+struct unit_desc_t {
+	0x0: u64 guid;
+	0x14: u32 id;
+	0x18: u32 flagsd;
+	0x48: u64 creator_guid;
+	0x84: u32 health;
+	0x88: u32 power;
+	0x9C: u32 health_max;
+	0xA0: u32 power_max;
+	0xDC: u32 level;
+	0xF4: u32 flags;
+};
