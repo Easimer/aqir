@@ -21,8 +21,7 @@
 
 #ifndef AQIR_LOADED
 static void aqir_init(void) __attribute__((constructor));
-#else
-#warning "Using Aqir Loaded, .so won't init itself on load"
+#warning "Aqir Loader support disabled"
 #endif
 
 static void aqir_fini(void) __attribute__((destructor));
@@ -155,10 +154,10 @@ void * aqir_thread_func(void *param)
 		bool isFishing = wow::localplayer::IsFishing();
 		bool isLooting = wow::localplayer::IsLooting();
 
-		if(!isFishing)
+		/*if(!isFishing)
 		{
 			x11_kbkey(KEY_4);
-		}
+		}*/
 
 		if(isMounted != wasMounted)
 		{

@@ -14,8 +14,12 @@ SOURCES=$(wildcard src/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 EXE=aqir.so
+LOADER=aqirl.so
 
-all: $(EXE)
+all: $(EXE) $(LOADER)
+
+$(LOADER):
+	cd loader && make
 
 $(EXE): $(OBJECTS)
 	$(CC) -o $(EXE) $(OBJECTS) $(LDFLAGS)
@@ -26,8 +30,9 @@ src/%.o: src/%.cpp include/%.h
 clean:
 	rm -rf $(OBJECTS) $(EXE)
 
-install: $(EXE)
-	cp aqir.so /usr/lib/
+install: $(EXE) $(LOADER)
+	cp $(EXE) "/home/easimer/.wine/drive_c/Tauri Launcher/MoP/"
+	cd loader && make install
 
 run:
 	LD_PRELOAD=aqir.so

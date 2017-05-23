@@ -1,3 +1,8 @@
+/*
+ * target.h - Target header
+ * Author: Daniel Meszaros <easimer@gmail.com>
+ * EasimerNet-Confidental
+ */
 #pragma once
 
 #include <stdint.h>

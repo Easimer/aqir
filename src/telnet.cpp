@@ -259,6 +259,7 @@ void telnet_process_command(int fd, std::string& cmd)
 				wow::player p(pplayer);
 				std::string buf;
 				std::stringstream res;
+				res << std::hex << pplayer << ' ';
 				res << p.name() << "\n(" << p.getx() << ',' << p.gety() << ',' << p.getz() << ')' << std::endl;
 				buf = res.str();
 				send(fd, buf.c_str(), buf.size(), 0);

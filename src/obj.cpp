@@ -113,24 +113,24 @@ namespace wow {
 	std::string player::name(void)
 	{
 		std::string pname = "(error)";
-		if(!IsPointerValid(baseaddr + 4592))
+		if(!IsPointerValid(baseaddr + 824))
 		{
 			std::cerr << __LINE__ << std::endl;
 			return pname;
 		}
-		uintptr_t cacheptr = *reinterpret_cast<uintptr_t*>(baseaddr + 4592);
-		if(!IsPointerValid(cacheptr))
+		uintptr_t cacheptr = *reinterpret_cast<uintptr_t*>(baseaddr + 824);
+		/*if(!IsPointerValid(cacheptr))
 		{
 			std::cerr << __LINE__ << std::endl;
 			return pname;
-		}
+		}*/
 		// that struct has a pointer @152 that points to the name string
-		if(!IsPointerValid(cacheptr + 152))
+		if(!IsPointerValid(cacheptr + 208))
 		{
 			std::cerr << __LINE__ << std::endl;
 			return pname;
 		}
-		uintptr_t namestructptr = *reinterpret_cast<uintptr_t*>(cacheptr + 152);
+		uintptr_t namestructptr = *reinterpret_cast<uintptr_t*>(cacheptr + 208);
 		if(!IsPointerValid(namestructptr))
 		{
 			std::cerr << __LINE__ << std::endl;

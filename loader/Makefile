@@ -26,3 +26,6 @@ src/%.o: src/%.cpp include/%.h
 clean:
 	rm -rf $(OBJECTS) $(EXE)
 
+install: $(EXE)
+	cp $(EXE) "/home/easimer/.wine/drive_c/Tauri Launcher/MoP/"
+

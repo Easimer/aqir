@@ -1,0 +1,45 @@
+aqir netctl protocol
+
+UDP port: 1668
+Magic number: 0xEA51
+Current version: 0
+Previous versions:
+1 - 0.1.2 -> current
+0 - beta
+
+PKTHDR - Packet Header
+============================
+	uint16 - magic number
+	uint16 - version
+	uint32 - type
+		UPDREQ 0x00000001
+		UPDRES 0x00000002
+		CTLREQ 0x00000003
+		CTLRES 0x00000004
+	uint64 - timestamp (seconds since the Unix Epoch)
+
+UPDREQ - Update Request
+============================
+	uint16		- type
+	uint16		- id
+	uint16		- parameter
+	uint8[58]	- reserved
+
+UPDRES - Update Response
+============================
+	uint16		- type
+	uint16		- id
+	uint8[60]	- reserved
+
+CTLREQ - Control Request
+============================
+	uint16		- type
+	uint16		- id
+	uint16		- parameter
+	uint8[58]	- reserved
+
+CTLRES - Control Response
+============================
+	uint16		- type
+	uint16		- id
+	uint8[60]	- reserved

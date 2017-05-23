@@ -1,3 +1,8 @@
+/*
+ * target.h - Target class
+ * Author: Daniel Meszaros <easimer@gmail.com>
+ * EasimerNet-Confidental
+ */
 #include <target.h>
 
 namespace wow {
@@ -8,6 +13,6 @@ namespace wow {
 
 	float target::getx(void)
 	{
-
+		
 	}
 }
