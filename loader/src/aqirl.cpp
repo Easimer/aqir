@@ -1,4 +1,10 @@
+/*
+ * aqirl.cpp - Aqir Loader
+ * Author: Daniel Meszaros <easimer@gmail.com>
+ * EasimerNet-Confidental
+ */
 #include <iostream>
+#include <fstream>
 
 #include <pthread.h>
 #include <unistd.h>
@@ -41,6 +47,16 @@ bool is_pending(void)
 bool is_loaded(void)
 {
 	return Loaded;
+}
+
+void copyso(void)
+{
+	std::ifstream src("aqir.so", std::ios::binary);
+	std::ofstream dst("aqir.copy.so", std::ios::binary | std::ios::out);
+
+	dst << src.rdbuf();
+	src.close();
+	dst.close();
 }
 
 void * aqirl_thread_func(void* param)
@@ -113,7 +129,8 @@ void * aqirl_thread_func(void* param)
 			std::cout << "Closed aqir.so" << std::endl;
 		}
 		std::cout << "Opening aqir.so" << std::endl;
-		aqir_so = dlopen("aqir.so", RTLD_NOW);
+		copyso();
+		aqir_so = dlopen("aqir.copy.so", RTLD_NOW);
 		if(!aqir_so)
 		{
 			char* err = dlerror();

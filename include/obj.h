@@ -87,6 +87,7 @@ public:
 	void setz(float v);
 	uint64_t getguid(void);
 	uint64_t getrotation(void);
+	void setmouse(void);
 
 };
 

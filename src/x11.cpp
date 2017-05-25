@@ -13,6 +13,15 @@
 #include <unistd.h>
 #include <iostream>
 
+const unsigned x11_xk_map[] = {
+	XK_0, XK_1, XK_2, XK_3, XK_4, XK_5, XK_6, XK_7, XK_8, XK_9, 
+	XK_A, XK_B, XK_C, XK_D, XK_E, XK_F, XK_G, XK_H, XK_I, XK_J, XK_K, XK_L,
+	XK_M, XK_N, XK_O, XK_P, XK_Q, XK_R, XK_S, XK_T, XK_U, XK_V, XK_W, XK_X,
+	XK_Y, XK_Z
+};
+
+#define X11_XK_MAP_LEN (36)
+
 Display *x11_d = NULL;
 
 void x11_open(void)
@@ -57,18 +66,10 @@ void x11_kbkey(int key)
 	if(!x11_d)
 		return;
 
-	int kc;
-	switch(key)
-	{
-		case KEY_4:
-			kc = XK_4;
-			break;
-		case KEY_LSHIFT:
-			kc = XK_Shift_L;
-			break;
-		default:
-			return;
-	}
+	if(key >= X11_XK_MAP_LEN)
+		return;
+
+	int kc = x11_xk_map[key];
 
 	KeyCode keycode = 0;
 	keycode = XKeysymToKeycode(x11_d, kc);
@@ -87,18 +88,15 @@ void x11_kbhold(int key)
 	if(!x11_d)
 		return;
 
+	if(key >= X11_XK_MAP_LEN && key != KEY_LSHIFT)
+		return;
+
 	int kc;
-	switch(key)
-	{
-		case KEY_4:
-			kc = XK_4;
-			break;
-		case KEY_LSHIFT:
-			kc = XK_Shift_L;
-			break;
-		default:
-			return;
-	}
+
+	if(key == KEY_LSHIFT)
+		kc = XK_Shift_L;
+	else
+		kc = x11_xk_map[key];
 
 	KeyCode keycode = 0;
 	keycode = XKeysymToKeycode(x11_d, kc);
@@ -113,18 +111,15 @@ void x11_kbrel(int key)
 	if(!x11_d)
 		return;
 
+	if(key >= X11_XK_MAP_LEN && key != KEY_LSHIFT)
+		return;
+
 	int kc;
-	switch(key)
-	{
-		case KEY_4:
-			kc = XK_4;
-			break;
-		case KEY_LSHIFT:
-			kc = XK_Shift_L;
-			break;
-		default:
-			return;
-	}
+
+	if(key == KEY_LSHIFT)
+		kc = XK_Shift_L;
+	else
+		kc = x11_xk_map[key];
 
 	KeyCode keycode = 0;
 	keycode = XKeysymToKeycode(x11_d, kc);

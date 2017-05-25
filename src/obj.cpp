@@ -67,6 +67,11 @@ namespace wow {
 		return *reinterpret_cast<uint64_t*>(*reinterpret_cast<uintptr_t*>(baseaddr + 0x08));
 	}
 
+	void gameobj::setmouse(void)
+	{
+		*reinterpret_cast<uint64_t*>(baseaddr + 0x14A20C0) = getguid();
+	}
+
 	player::player(void) : gameobj() {}
 	player::player(uintptr_t& baseaddr) : gameobj(baseaddr) {}
 

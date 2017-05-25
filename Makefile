@@ -30,9 +30,12 @@ src/%.o: src/%.cpp include/%.h
 clean:
 	rm -rf $(OBJECTS) $(EXE)
 
-install: $(EXE) $(LOADER)
+finstall: $(EXE) $(LOADER)
 	cp $(EXE) "/home/easimer/.wine/drive_c/Tauri Launcher/MoP/"
 	cd loader && make install
+
+install: $(EXE)
+	cp $(EXE) "/home/easimer/.wine/drive_c/Tauri Launcher/MoP/"
 
 run:
 	LD_PRELOAD=aqir.so

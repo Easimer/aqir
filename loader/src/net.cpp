@@ -1,3 +1,8 @@
+/*
+ * net.cpp - Telnet shell
+ * Author: Daniel Meszaros <easimer@gmail.com>
+ * EasimerNet-Confidental
+ */
 #include <aqirl.h>
 #include <net.h>
 #include <iostream>

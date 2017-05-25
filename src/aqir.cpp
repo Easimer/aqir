@@ -32,7 +32,7 @@ extern "C" {
 
 	const int aqir_version_ = 1;
 	const int* aqir_version = &aqir_version_;
-	const char* aqir_version_str = "Aqir 0.1.1 by easimer";
+	const char* aqir_version_str = "Aqir 0.1.2 by easimer";
 	void * aqir_thread_func(void *);
 }
 
@@ -227,8 +227,16 @@ void * aqir_thread_func(void *param)
 						}
 						else
 						{
-							std::cerr << "[!!!] Bobber was out of view, please correct the camera angles" << std::endl;
+							std::cerr << "[!!!] Bobber was out of view, please move the camera" << std::endl;
 						}
+						/*std::cout << "Setting bobber as Mouse GUID" << std::endl;
+						bobber.setmouse();
+						std::cout << "Pressing I(interact)" << std::endl;
+						x11_open();
+						x11_kbhold(KEY_LSHIFT);
+						x11_kbkey(KEY_I);
+						x11_kbrel(KEY_LSHIFT);
+						x11_close();*/
 						sleep(1);
 						
 					}
