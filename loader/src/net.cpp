@@ -1,7 +1,7 @@
 /*
  * net.cpp - Telnet shell
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <aqirl.h>
 #include <net.h>

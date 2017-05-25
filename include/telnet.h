@@ -1,7 +1,7 @@
 /*
  * telnet.h - Telnet header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #pragma once
 

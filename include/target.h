@@ -1,11 +1,12 @@
 /*
  * target.h - Target header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #pragma once
 
 #include <stdint.h>
+#include <offsets.h>
 
 namespace wow {
 	class target {
@@ -26,5 +27,3 @@ namespace wow {
 		static int getlevel(void);
 	};
 }
-
-#define TARGETOFF 0x14A20D8

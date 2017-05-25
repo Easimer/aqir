@@ -1,19 +1,11 @@
 /*
  * camera.h - Game camera header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #pragma once
 
-#define CAMSTOFF 0x14A13B0
-#define CAMOFF 0x85E8
-
-#define CAMORIGOFF 0x10
-#define CAMMATOFF 0x1C
-#define CAMNPOFF 0x38
-#define CAMFPOFF 0x3C
-#define CAMFOVOFF 0x40
-#define CAMAROFF 0x44
+#include <offsets.h>
 
 #define M_DEG2RAD 0.017453292519943295769236907684886f
 

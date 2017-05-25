@@ -1,7 +1,7 @@
 /*
  * player.cpp - player
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <wow.h>
 #include <player.h>
@@ -69,6 +69,13 @@ namespace wow {
 		return *p;
 	}
 
+	// These set the local player's position.
+	// Changes won't be visible to other players or the remote world server
+	// immediately, you will need to move or cast a spell first.
+	// (a spell that checks for LoS)
+	// Works for short distances. You will be able to clip through the terrain
+	// and fly under the world, but for long distance teleportation, servers
+	// usually disconnect you or move you back to your original position.
 	void localplayer::SetX(float v)
 	{
 		*reinterpret_cast<float*>(game::GetPlayerPointer() + PLAYER_X) = v;
@@ -133,7 +140,7 @@ namespace wow {
 
 	uint64_t localplayer::getmguid(void)
 	{
-		return *reinterpret_cast<uint64_t*>(0x1414A20C0);
+		return *reinterpret_cast<uint64_t*>(MOUSE_GUID);
 	}
 
 }

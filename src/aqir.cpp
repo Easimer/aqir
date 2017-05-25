@@ -1,7 +1,7 @@
 /*
  * aqir.cpp - Aqir Entry Point
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <aqir.h>
 #include <wow.h>
@@ -32,12 +32,13 @@ extern "C" {
 
 	const int aqir_version_ = 1;
 	const int* aqir_version = &aqir_version_;
-	const char* aqir_version_str = "Aqir 0.1.2 by easimer";
+	const char* aqir_version_str = "Aqir 0.1.3 by easimer";
 	void * aqir_thread_func(void *);
 }
 
 extern void * aqir_net_thread_func(void *); 
 
+// DLL constructor (called only when not loaded using aqirl)
 static void aqir_init(void)
 {
 	if(pthread_create(&aqir_thread, NULL, aqir_thread_func, NULL))
@@ -46,6 +47,7 @@ static void aqir_init(void)
 	}
 }
 
+// DLL destructor
 static void aqir_fini(void)
 {
 	pthread_cancel(aqir_net_thread);
@@ -115,8 +117,6 @@ void * aqir_thread_func(void *param)
 		exit(666);
 	}
 
-	//CXOrg win("World of Warcraft");
-
 	// acquire player base address
 
 	uintptr_t player;
@@ -170,6 +170,7 @@ void * aqir_thread_func(void *param)
 			if(!wasFishing)
 			{
 				sleep(1);
+				// Find my fishing bobber
 				const char* fbn = "Fishing Bobber";
 				uintptr_t bobberaddr = om.GetOwnedObjectByName(fbn, O_ANY);
 				if(bobberaddr)
@@ -205,7 +206,7 @@ void * aqir_thread_func(void *param)
 					if(!fired)
 					{
 						float bpos[3]; float spos[2];
-
+						// Project the Fishing Bobber's position on the screen
 						fired = true;
 
 						bpos[0] = bobber.getx();
@@ -229,14 +230,6 @@ void * aqir_thread_func(void *param)
 						{
 							std::cerr << "[!!!] Bobber was out of view, please move the camera" << std::endl;
 						}
-						/*std::cout << "Setting bobber as Mouse GUID" << std::endl;
-						bobber.setmouse();
-						std::cout << "Pressing I(interact)" << std::endl;
-						x11_open();
-						x11_kbhold(KEY_LSHIFT);
-						x11_kbkey(KEY_I);
-						x11_kbrel(KEY_LSHIFT);
-						x11_close();*/
 						sleep(1);
 						
 					}
@@ -244,7 +237,8 @@ void * aqir_thread_func(void *param)
 			}
 			sleep(1);
 		}
-		// watch if the player has logged out; avoid SIGSEGV
+		// Player pointer changes on map reloads
+		// Watch out for this to avoid a SIGSEGV
 		player2 = wow::game::GetPlayerPointer();
 		if(!player2)
 		{

@@ -1,7 +1,7 @@
 /*
  * utils.cpp - Utility functions
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <utils.h>
 
@@ -9,6 +9,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+// Checks if a pointer is safe to be dereferenced
+// msync is a Linux syscall that return a non-zero value
+// if there is a problem with the address
+// Consult `man 3 msync` for more details
 bool IsPointerValid(uintptr_t p)
 {
 	size_t page_size = sysconf(_SC_PAGESIZE);

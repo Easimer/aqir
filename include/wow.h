@@ -1,22 +1,19 @@
 /*
  * wow.h - CWow header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #pragma once
 
 #include <stdint.h>
 #include <obj.h>
 #include <string>
+#include <offsets.h>
 
 namespace wow {
 
 	class game {
 	public:
-		static uintptr_t GetObjMgrBase(void);
-		static uintptr_t GetObjMgr(void);
-		static uintptr_t GetObjMgrFirst(void);
-
 		static unsigned short GetGameBuild(void);
 		static uintptr_t GetPlayerPointer(void);
 		static bool IsPlayerInGame(void);
@@ -31,9 +28,3 @@ namespace wow {
 	};
 
 }
-
-#define GAMEBUILD_OFF (0x1274FE4)
-#define PLAYERPTR_OFF (0x141C2D0)
-
-#define BASEADDR (0x140000000)
-#define CLIENTCONN (0x009BE678)

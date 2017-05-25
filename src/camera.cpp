@@ -1,7 +1,7 @@
 /*
  * camera.cpp - Game camera functions
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <wow.h>
 #include <camera.h>
@@ -10,6 +10,7 @@
 #include <cmath>
 
 namespace wow {
+	// Copies the local camera's viewmatrix to out
 	void camera::GetMatrix(float* out)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -19,6 +20,7 @@ namespace wow {
 		memcpy(out, CameraMatrix, 36);
 	}
 
+	// Copies the local camera's position to out
 	void camera::GetPosition(float* out)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -28,6 +30,7 @@ namespace wow {
 		memcpy(out, CameraOrigin, 3 * sizeof(float));
 	}
 
+	// Returns the field of view
 	float camera::GetFieldOfView(void)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -36,6 +39,7 @@ namespace wow {
 		return *reinterpret_cast<float*>(CameraBase + CAMFOVOFF);
 	}
 
+	// Returns the camera near plane distance
 	float camera::GetNearPlane(void)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -44,6 +48,7 @@ namespace wow {
 		return *reinterpret_cast<float*>(CameraBase + CAMNPOFF);
 	}
 
+	// Returns the camera far plane distance
 	float camera::GetFarPlane(void)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -52,6 +57,7 @@ namespace wow {
 		return *reinterpret_cast<float*>(CameraBase + CAMFPOFF);
 	}
 
+	// Returns the aspect ratio
 	float camera::GetAspectRatio(void)
 	{
 		uintptr_t CameraPtr = BASEADDR + CAMSTOFF;
@@ -60,6 +66,7 @@ namespace wow {
 		return *reinterpret_cast<float*>(CameraBase + CAMAROFF);
 	}
 
+	// Project vector3 at 'in' onto the screen, return vector2 to 'out'
 	void camera::WorldToScreen(float* in, float* out)
 	{
 		float fDiff[3];

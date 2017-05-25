@@ -1,18 +1,14 @@
 /*
  * objmgr.h - WoW Object Manager header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 
 #pragma once
 
 #include <cstdint>
 #include <vector>
-
-#define BASEADDR (0x140000000)
-#define ENTLIST (0x1387048)
-#define OBJMGR_0 (0x18)
-#define OBJMGR_N (0x58)
+#include <offsets.h>
 
 namespace wow {
 	class objmgr {

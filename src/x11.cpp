@@ -1,7 +1,7 @@
 /*
  * x11.cpp - XOrg functions
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 
 #include <x11.h>

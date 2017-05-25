@@ -1,7 +1,7 @@
 /*
  * obj.h - WoW Object header
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #pragma once
 
@@ -108,18 +108,3 @@ public:
 };
 
 }
-
-#define UNIT_OFF_DESC 0x8
-#define UNIT_OFF_DESC_FLAGSD 24
-#define UNIT_OFF_DESC_CREATOR 72
-#define UNIT_OFF_DESC_HEALTH 132
-#define UNIT_OFF_DESC_POWER 136
-#define UNIT_OFF_DESC_HEALTHM 156
-#define UNIT_OFF_DESC_POWERM 160
-#define UNIT_OFF_DESC_LEVEL 220
-#define UNIT_OFF_POSX 4160
-#define UNIT_OFF_POSY 4164
-#define UNIT_OFF_POSZ 4168
-#define UNIT_OFF_ROT 4176
-#define UNIT_OFF_CASTING 5640
-#define UNIT_OFF_CHANNELING 5664

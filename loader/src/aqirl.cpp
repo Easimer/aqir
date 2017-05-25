@@ -1,7 +1,7 @@
 /*
  * aqirl.cpp - Aqir Loader
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <iostream>
 #include <fstream>
@@ -105,7 +105,9 @@ void * aqirl_thread_func(void* param)
 		exit(666);
 	}
 
+	// DLL handler
 	void* aqir_so = NULL;
+	// Pointer to aqir_thread_func
 	void* (*aqir_main)(void*);
 	int ret;
 
@@ -123,12 +125,19 @@ void * aqirl_thread_func(void* param)
 			Loaded = false;
 			//std::cout << "Canceling aqir threads" << std::endl;
 			//pthread_cancel(*aqir_net_thread);
+			// Cancel aqir thread, wait for it to finish
 			pthread_cancel(aqir_thread);
 			pthread_join(aqir_thread, NULL);
+			// close DLL
 			dlclose(aqir_so);
 			std::cout << "Closed aqir.so" << std::endl;
 		}
 		std::cout << "Opening aqir.so" << std::endl;
+		// Copy .so file first
+		// If you load aqir.so, then overwrite it from the outside
+		// while it is open then the process will SIGSEGV.
+		// So we copy the .so first, then we load that copy instead of
+		// the original.
 		copyso();
 		aqir_so = dlopen("aqir.copy.so", RTLD_NOW);
 		if(!aqir_so)
@@ -142,6 +151,7 @@ void * aqirl_thread_func(void* param)
 		}
 		std::cerr << "aqir.so loaded" << std::endl;
 
+		// Link the version number
 		int aqir_ver = **(int**)dlsym(aqir_so, "aqir_version");
 		if(!aqir_ver)
 		{
@@ -153,6 +163,7 @@ void * aqirl_thread_func(void* param)
 			continue;
 		}
 
+		// Link version string and print it
 		char* aqir_ver_str = *(char**)dlsym(aqir_so, "aqir_version_str");
 		if(!aqir_ver_str)
 		{
@@ -178,6 +189,7 @@ void * aqirl_thread_func(void* param)
 			continue;
 		}
 		std::cerr << "Linking net_thread" << std::endl;
+		// Link the aqir_net_thread variable
 		aqir_net_thread = (pthread_t*)dlsym(aqir_so, "aqir_net_thread");
 		if(!aqir_net_thread)
 		{
@@ -189,6 +201,7 @@ void * aqirl_thread_func(void* param)
 			continue;
 		}
 		std::cout << "Starting aqir" << std::endl;
+		// create the aqir thread
 		if((ret = pthread_create(&aqir_thread, NULL, aqir_main, NULL)))
 		{
 			std::cerr << "Failed to create thread: ";

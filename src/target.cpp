@@ -1,7 +1,7 @@
 /*
  * target.h - Target class
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <target.h>
 

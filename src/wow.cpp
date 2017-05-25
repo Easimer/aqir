@@ -1,7 +1,7 @@
 /*
  * wow.cpp - Game-related functions
  * Author: Daniel Meszaros <easimer@gmail.com>
- * EasimerNet-Confidental
+ * This file is part of Aqir, see LICENSE
  */
 #include <wow.h>
 #include <atomic>
@@ -37,29 +37,14 @@ namespace wow {
 		return ExecuteBot.load();
 	}
 
-	uintptr_t game::GetObjMgrBase(void)
-	{
-		return *(uintptr_t*)(BASEADDR + 0xEC4628);
-	}
-
-	uintptr_t game::GetObjMgr(void)
-	{
-		return *(uintptr_t*)(GetObjMgrBase() + 0x462c);
-	}
-
-	uintptr_t game::GetObjMgrFirst(void)
-	{
-		return *(uintptr_t*)(GetObjMgr() + 0xCC);
-	}
-
 	uintptr_t game::GetEntityList(void)
 	{
-		return (uintptr_t)(BASEADDR + 0x1387048);
+		return (uintptr_t)(BASEADDR + ENTLIST);
 	}
 
 	uintptr_t game::GetFirstEntityAddr(void)
 	{
-		return *(uintptr_t*)(GetEntityList() + 0x18);
+		return *(uintptr_t*)(GetEntityList() + OBJMGR_0);
 	}
 
 }
