@@ -271,6 +271,20 @@ void telnet_process_command(int fd, std::string& cmd)
 			name.append("\n");
 			send(fd, name.c_str(), name.size(), 0);
 		}
+		else if(tok[0] == "help")
+		{
+			std::string help =
+			"enable - enables the fishing bot\n"
+			"disable - disables the fishing bot\n"
+			"testkey - presses the key 4\n"
+			"dump <memaddr> <n>- dumps the first <n> bytes starting from <memaddr>\n"
+			"pos - print player and camera position\n"
+			"jump - add 10 units to player's Z position\n"
+			"descend - subtract 10 units from player's Z position\n"
+			"players - list players with names and position\n"
+			"help - prints this\n\n";
+			send(fd, help.c_str(), help.size(), 0);
+		}
 		else
 		{
 			telnet_err(fd, TELNET_ERR_NOSUCH);
@@ -283,7 +297,8 @@ void telnet_process_client(int fd)
 	int rc;
 	std::stringstream ss;
 	const char* prompt = "# ";
-	std::string motd = "aqsh\navailable commands: enable, disable, testkey, dump\n\n";
+	std::string motd = "aqsh\navailable commands: enable, disable, testkey, \
+	dump,\npos, jump, descend, players, help\n\n";
 	send(fd, motd.c_str(), motd.size(), 0);
 
 	send(fd, prompt, 2, 0);
