@@ -11,6 +11,7 @@
 #include <x11.h>
 #include <objmgr.h>
 #include <telnet.h>
+#include <utils.h>
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
@@ -127,169 +128,241 @@ void telnet_err(int fd, int errcode)
 	const char* err_nocmd = "no such command\n";
 	const char* err_insuff = "not enough arguments\n";
 	const char* err_generic = "error\n";
-	//std::string err_nocmd = "no such command\n";
-	//std::string err_insuff = "not enough arguments\n";
-	//std::string err_generic = "error\n";
+	const char* err_ok = "OK\n";
 
 	switch(errcode)
 	{
 		case TELNET_ERR_INSUF:
-			send(fd, err_insuff, 21, 0);
+			send(fd, err_insuff, strlen(err_insuff), 0);
 			break;
 		case TELNET_ERR_NOSUCH:
-			send(fd, err_nocmd, 16, 0);
+			send(fd, err_nocmd, strlen(err_nocmd), 0);
+			break;
+		case TELNET_ERR_OK:
+			send(fd, err_ok, strlen(err_ok), 0);
 			break;
 		default:
-			send(fd, err_generic, 6, 0);
+			send(fd, err_generic, strlen(err_generic), 0);
 			break;
 	}
+}
+
+// Command handlers
+
+TELNET_DEF_CMD_FUNCTION(enable)
+{
+	wow::game::EnableBot();
+	std::cout << "network: bot enabled remotely" << std::endl;
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(disable)
+{
+	wow::game::DisableBot();
+	std::cout << "network: bot disabled remotely" << std::endl;
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(dmem)
+{
+	std::stringstream buf;
+	uintptr_t addr;
+	size_t size;
+	bool sent = false;
+
+	if(tok.size() < 3)
+	{
+		telnet_err(fd, TELNET_ERR_INSUF);
+		return false;
+	}
+
+	addr = std::stoull(tok[1], nullptr, 16);
+	size = std::stoull(tok[2], nullptr, 10);
+
+	if(addr == 0 || !IsPointerValid(addr))
+	{
+		return false;
+	}
+
+	std::cout << "network: memory dump from " <<
+		std::hex << addr << " to " <<
+		std::hex << (addr + size) <<
+		std::dec << std::endl;
+
+	buf << std::hex;
+
+	for(size_t i = 0; i < size; i++)
+	{
+		uint8_t byte = reinterpret_cast<uint8_t*>(addr)[i];
+		buf << std::hex << (unsigned)byte << ' ';
+		if((i & 15) == 0)
+			sent = false;
+		if((i & 15) == 15)
+		{
+			buf << std::endl;
+			std::string s = buf.str();
+			send(fd, s.c_str(), s.size(), 0);
+			buf.clear();
+			sent = true;
+		}
+	}
+	if(!sent)
+	{
+		std::string s = buf.str();
+		send(fd, s.c_str(), s.size(), 0);
+	}
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(xkbe)
+{
+	std::cout << "network: X11 keypress test" << std::endl;
+	sleep(2);
+	x11_open();
+	x11_kbkey(KEY_4);
+	x11_close();
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(jump)
+{
+	if(!wow::localplayer::IsInGame())
+		return false;
+	std::cout << "network: ascension" << std::endl;
+	wow::localplayer::SetZ(wow::localplayer::GetZ() + 10.f);
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(descend)
+{
+	if(!wow::localplayer::IsInGame())
+		return false;
+	std::cout << "network: descension" << std::endl;
+	wow::localplayer::SetZ(wow::localplayer::GetZ() - 10.f);
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(pos)
+{
+	float ppos[3];
+	float cpos[3];
+	std::stringstream buf;
+
+	if(!wow::localplayer::IsInGame())
+		return false;
+
+	std::cout << "network: local player position" << std::endl;
+
+	ppos[0] = wow::localplayer::GetX();
+	ppos[1] = wow::localplayer::GetY();
+	ppos[2] = wow::localplayer::GetZ();
+	
+	wow::camera::GetPosition(cpos);
+
+	buf << "Player: " << ppos[0] << ' ' << ppos[1] << ' ' << ppos[2] << std::endl;
+	buf << "Camera: " << cpos[0] << ' ' << cpos[1] << ' ' << cpos[2] << std::endl;
+
+	std::string s = buf.str();
+
+	std::cout << s;
+	send(fd, s.c_str(), s.size(), 0);
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(players)
+{
+	if(!wow::localplayer::IsInGame())
+		return false;
+	wow::objmgr om;
+
+	std::cout << "network: players listed" << std::endl;
+
+	std::vector<uintptr_t> players = om.GetPlayers();
+	for(auto& pplayer : players)
+	{
+		wow::player p(pplayer);
+		std::string buf;
+		std::stringstream res;
+		res << std::hex << pplayer << ' ';
+		res << p.name() << "\n(" << p.getx() << ',' << p.gety() << ',' << p.getz() << ')' << std::endl;
+		buf = res.str();
+		send(fd, buf.c_str(), buf.size(), 0);
+	}
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION(whoami)
+{
+	if(!wow::localplayer::IsInGame())
+		return false;
+	std::cout << "network: whoami" << std::endl;
+	auto name = wow::localplayer::GetName();
+	name.append("\n");
+	send(fd, name.c_str(), name.size(), 0);
+	return true;
+}
+
+TELNET_DEF_CMD_FUNCTION_DEC(help)
+
+TELNET_DEF_CMD_START
+// Bot controls
+TELNET_DEF_CMD(enable, "Enable the fishing bot")
+TELNET_DEF_CMD(disable, "Disable the fishing bot")
+// Information
+TELNET_DEF_CMD(pos, "Print local player's and the camera's position")
+TELNET_DEF_CMD(players, "Print players and their position")
+TELNET_DEF_CMD(whoami, "Print local player's name")
+TELNET_DEF_CMD(help, "Print this text")
+// Cheats
+TELNET_DEF_CMD(jump, "CHEAT: Increment Z position (height) by 10 units")
+TELNET_DEF_CMD(descend, "CHEAT: Decrement Z position (height) by 10 units")
+// Debug
+TELNET_DEF_CMD(dmem, "DEBUG: Dump memory: <address> <size>")
+//TELNET_DEF_CMD(xmbe, "X11 Mouse Button Event test")
+TELNET_DEF_CMD(xkbe, "DEBUG: X11 Keyboard Button Event test")
+TELNET_DEF_CMD_END
+
+;
+
+TELNET_DEF_CMD_FUNCTION(help)
+{
+	std::stringstream buf;
+	buf << "aqir shell" << std::endl;
+
+	auto jte = TELNET_DEF_CMD_FIRST;
+
+	while(TELNET_DEF_CMD_HASH(jte) != 0 && TELNET_DEF_CMD_CALLBACK(jte) != NULL)
+	{
+		buf << TELNET_DEF_CMD_NAME(jte) << " - " << TELNET_DEF_CMD_HELP(jte) << std::endl;
+		jte++;
+	}
+
+	std::string s = buf.str();
+
+	send(fd, s.c_str(), s.size(), 0);
+	return true;
 }
 
 void telnet_process_command(int fd, std::string& cmd)
 {
 		auto tok = split(cmd);
-		for(auto& t : tok)
+		size_t tok0hash = std::hash<std::string>{}(tok[0]);
+		auto jte = TELNET_DEF_CMD_FIRST;
+
+		while(TELNET_DEF_CMD_HASH(jte) != 0 && TELNET_DEF_CMD_CALLBACK(jte) != NULL)
 		{
-			std::cout << t << std::endl;
-		}
-		if(tok[0] == "enable")
-		{
-			wow::game::EnableBot();
-			std::cout << "network: bot enabled remotely" << std::endl;
-		}
-		else if(tok[0] == "disable")
-		{
-			wow::game::DisableBot();
-			std::cout << "network: bot disabled remotely" << std::endl;
-		}
-		else if(tok[0] == "testkey")
-		{
-			sleep(2);
-			x11_open();
-			x11_kbkey(KEY_4);
-			x11_close();
-			std::cout << "network: key test issued" << std::endl;
-		}
-		else if(tok[0] == "dump")
-		{
-			if(tok.size() < 3)
+			if(TELNET_DEF_CMD_HASH(jte) == tok0hash)
 			{
-				//send(fd, err_insuff.c_str(), err_insuff.size(), 0);
-				telnet_err(fd, TELNET_ERR_INSUF);
+				if(TELNET_DEF_CMD_CALL(jte, fd, tok))
+					telnet_err(fd, TELNET_ERR_OK);
 				return;
 			}
-
-			uintptr_t addr;
-			size_t size;
-
-			addr = std::stoull(tok[1], nullptr, 16);
-			size = std::stoull(tok[2], nullptr, 10);
-
-			if(addr == 0)
-			{
-				telnet_err(fd, -1);
-			}
-
-			std::stringstream buf;
-
-			buf << std::hex;
-
-			bool sent = false;
-
-			for(size_t i = 0; i < size; i++)
-			{
-				uint8_t byte = reinterpret_cast<uint8_t*>(addr)[i];
-				buf << std::hex << (unsigned)byte << ' ';
-				if((i & 15) == 0)
-					sent = false;
-				if((i & 15) == 15)
-				{
-					buf << std::endl;
-					std::string s = buf.str();
-					send(fd, s.c_str(), s.size(), 0);
-					buf.clear();
-					sent = true;
-				}
-			}
-			if(!sent)
-			{
-				std::string s = buf.str();
-				send(fd, s.c_str(), s.size(), 0);
-			}
-
+			jte++;
 		}
-		else if(tok[0] == "mclick")
-		{
-			if(tok.size() < 3)
-			{
-				telnet_err(fd, TELNET_ERR_INSUF);
-				//send(fd, err_insuff.c_str(), err_insuff.size(), 0);
-				return;
-			}
-			
-		}
-		else if(tok[0] == "pos")
-		{
-			float ppos[3];
-			float cpos[3];
 
-			ppos[0] = wow::localplayer::GetX();
-			ppos[1] = wow::localplayer::GetY();
-			ppos[2] = wow::localplayer::GetZ();
-			
-			wow::camera::GetPosition(cpos);
+		telnet_err(fd, TELNET_ERR_NOSUCH);
 
-			std::cout << "Player: " << ppos[0] << ' ' << ppos[1] << ' ' << ppos[2] << std::endl;
-			std::cout << "Camera: " << cpos[0] << ' ' << cpos[1] << ' ' << cpos[2] << std::endl;
-		}
-		else if(tok[0] == "jump")
-		{
-			wow::localplayer::SetZ(wow::localplayer::GetZ() + 10.f);
-		}
-		else if(tok[0] == "descend")
-		{
-			wow::localplayer::SetZ(wow::localplayer::GetZ() - 10.f);
-		}
-		else if(tok[0] == "players")
-		{
-			wow::objmgr om;
-			std::vector<uintptr_t> players = om.GetPlayers();
-			for(auto& pplayer : players)
-			{
-				wow::player p(pplayer);
-				std::string buf;
-				std::stringstream res;
-				res << std::hex << pplayer << ' ';
-				res << p.name() << "\n(" << p.getx() << ',' << p.gety() << ',' << p.getz() << ')' << std::endl;
-				buf = res.str();
-				send(fd, buf.c_str(), buf.size(), 0);
-			}
-		}
-		else if(tok[0] == "whoami")
-		{
-			auto name = wow::localplayer::GetName();
-			name.append("\n");
-			send(fd, name.c_str(), name.size(), 0);
-		}
-		else if(tok[0] == "help")
-		{
-			std::string help =
-			"enable - enables the fishing bot\n"
-			"disable - disables the fishing bot\n"
-			"testkey - presses the key 4\n"
-			"dump <memaddr> <n>- dumps the first <n> bytes starting from <memaddr>\n"
-			"pos - print player and camera position\n"
-			"jump - add 10 units to player's Z position\n"
-			"descend - subtract 10 units from player's Z position\n"
-			"players - list players with names and position\n"
-			"help - prints this\n\n";
-			send(fd, help.c_str(), help.size(), 0);
-		}
-		else
-		{
-			telnet_err(fd, TELNET_ERR_NOSUCH);
-			//send(fd, err_nocmd.c_str(), err_nocmd.size(), 0);
-		}
+		return;
 }
 
 void telnet_process_client(int fd)
@@ -297,9 +370,10 @@ void telnet_process_client(int fd)
 	int rc;
 	std::stringstream ss;
 	const char* prompt = "# ";
-	std::string motd = "aqsh\navailable commands: enable, disable, testkey, \
-	dump,\npos, jump, descend, players, help\n\n";
-	send(fd, motd.c_str(), motd.size(), 0);
+
+	std::vector<std::string> help_hack = {"help"};
+
+	telnet_cmd_help(fd, help_hack);
 
 	send(fd, prompt, 2, 0);
 
