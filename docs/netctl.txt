@@ -14,8 +14,9 @@ PKTHDR - Packet Header
 	uint32 - type
 		UPDREQ 0x00000001
 		UPDRES 0x00000002
-		CTLREQ 0x00000003
-		CTLRES 0x00000004
+		UPDSTS 0x00000003
+		CTLREQ 0x00000004
+		CTLRES 0x00000005
 	uint64 - timestamp (seconds since the Unix Epoch)
 
 UPDREQ - Update Request
@@ -31,6 +32,12 @@ UPDRES - Update Response
 	uint16		- id
 	uint8[60]	- reserved
 
+UPDSTS - Update Status
+============================
+	uint16		- id
+	uint16		- count
+	uint8[58]	- reserved
+
 CTLREQ - Control Request
 ============================
 	uint16		- type
@@ -43,3 +50,249 @@ CTLRES - Control Response
 	uint16		- type
 	uint16		- id
 	uint8[60]	- reserved
+
+PLAYER - Player object
+===================================================================
+	char[20]	- First 20 characters of the player's name
+	float[3]	- World coordinates
+	float		- Angle
+	uint64		- GUID
+	uint32		- Health
+	uint32		- Power
+	uint32		- Level
+	uint8		- Health / maxhealth in percentage
+	uint8		- Power / maxpower in percentage
+	uint16		- Flags
+
+GOBJDT - GameObject data
+===================================================================
+	char[20]	- First 20 characters of the object's name
+	float[3]	- World coordinates
+	float		- Angle
+	uint64		- GUID
+	uint64		- Creator GUID
+	uint16		- Flags
+
+CAMOBJ - Camera data
+===================================================================
+	float[9]	- Camera matrix
+	float[3]	- Camera position
+	float		- Field of View in degrees
+	float		- Near plane
+	float		- Far plane
+
+General fields
+============================
+	uint16		- type
+		This is the request/response type. Possible values
+		of this field are listed below. This is a mandatory field.
+	uint16		- id
+		This field identifies a update/response stream. To some requests
+		the server responds with a list. Most of the time this list won't fit in
+		the 60 bytes reserved, so the server WILL send multiple packets with a
+		specific ID.
+		
+		
+
+
+Regarding list responses
+============================
+		Most of the time a list won't fit in
+		the 60 bytes reserved, thereby the server WILL send every list element
+		in multiple packets with the same stream ID.
+
+		Since these packets may arrive unordered due to the nature of the
+		UDP protocol, one packet WILL contain only one entry of the list as
+		reassembly is not possible.
+		
+		If the client sends a request, to which the response is a list,
+		the client WILL specify the number of elements it expects at most in
+		the	`parameter` field of the request header.
+
+		The server WILL send an Update Status packet, where the id and type
+		fields are mirrored from the request packet with the exception that
+		the type field has it's most significant bit set to 1. The `count`
+		field contains the number of elements the client's query has yielded
+		OR the count the client has requested, in case the former is greater
+		than the maximum specified by the client.
+		
+		Since this packet may arrive after some or all of the list
+		entries have arrived to the client, the client should expect the number
+		of packets that it has specified in the Update Request's
+		`parameter` field.
+
+		In any of these cases:
+			- the client receives the Update Status, but didn't get all
+				the list entries;
+			- the client receives no Update Status, but receives some list
+				entries,
+			- or the client receives no data whatsoever
+		after a timeout of 5 seconds the client WILL disconnect from the server.
+
+		Because of this every request must be made on a separate socket.
+		Why the stream identification, you may ask. We could use an extra
+		2 bytes of data in our response structures. Well, this ensures that
+		the client can filter every packet not intended to it and throw it away.
+		The server may serve multiple clients at once and this way it can
+		connect which IP:port pair belongs to a certain request.
+
+Update request types
+*======+===================*
+| type | name			   |
+*------+-------------------*
+|    1 | get local player  |
+|    2 | get players       |
+|    3 | get objects       |
+|    4 | get local camera  |
+|    5 | get object byname |
+*======+===================*
+
+*=============+==============================================*
+| type        |          1 |                                 |
+*-------------+----------------------------------------------*
+| description | Responds with a player object of the local   |
+*-------------* player.										 |
+|															 |
+|															 |
+*-------------+----------------------------------------------*
+| parameter   | (none)                                       |
+*-------------*												 |
+|															 |
+|															 |
+*=============+==============================================*
+
+*=============+==============================================*
+| type        |          2 |                                 |
+*-------------+----------------------------------------------*
+| description | Responds a list of player objects. DOES NOT  |
+*-------------* contain the local player.                    |
+|                                                            |
+|                                                            |
+*-------------+----------------------------------------------*
+| parameter   | Number of player objects the client expects  |
+*-------------* at most.                                     |
+|                                                            |
+|                                                            |
+*=============+==============================================*
+
+*=============+==============================================*
+| type        |          3 |                                 |
+*-------------+----------------------------------------------*
+| description | Responds a list of gameobjects.              |
+*-------------*                                              |
+|                                                            |
+|                                                            |
+*-------------+----------------------------------------------*
+| parameter   | Number of gameobjects the client expects at  |
+*-------------* most.                                        |
+|                                                            |
+|                                                            |
+*=============+==============================================*
+
+*=============+==============================================*
+| type        |          4 |                                 |
+*-------------+----------------------------------------------*
+| description | Responds with a camera data struct.          |
+*-------------*                                              |
+|                                                            |
+|                                                            |
+*-------------+----------------------------------------------*
+| parameter   | (none)                                       |
+*-------------*												 |
+|                                                            |
+|                                                            |
+*=============+==============================================*
+
+*=============+==============================================*
+| type        |          5 |                                 |
+*-------------+----------------------------------------------*
+| description | Responds with a list of object data structs. |
+*-------------*                                              |
+|                                                            |
+|                                                            |
+*-------------+----------------------------------------------*
+| parameter   | Number of gameobjects the client expects at  |
+*-------------* most.				                         |
+|                                                            |
+|                                                            |
+*=============+==============================================*
+
+Diagram of how an update looks like when the client expects only one response
+object:
+
+1. Client sends an update request
+*=============+===================*
+| magic       |            0xEA51 | // magic number
+*-------------+-------------------*
+| version     |                 1 | // protocol version
+*-------------+-------------------*
+| type        |        0x00000001 | // packet type (Update Request)
+*-------------+-------------------*
+| timestamp   |        1234567890 | // timestamp
+*=============+===================*
+| id          |            0x3A84 | // stream ID
+*-------------+-------------------*
+| type        |                 1 | // packet subtype (Get Local Player)
+*-------------+-------------------*
+| parameter   |                 0 | // no parameter
+*-------------+-------------------*
+| reserved    |        ALL ZEROES | // reserved
+*=============+===================*
+
+2. Server responds with an update status and an update response
+*=============+===================*
+| magic       |            0xEA51 | // magic number
+*-------------+-------------------*
+| version     |                 1 | // protocol version
+*-------------+-------------------*
+| type        |        0x00000003 | // packet type (Update Status)
+*-------------+-------------------*
+| timestamp   |        1234567891 | // timestamp
+*=============+===================*
+| id          |            0x3A84 | // stream ID
+*-------------+-------------------*
+| count       |                 1 | // client should expect one response object
+*-------------+-------------------*
+| reserved    |        ALL ZEROES | // reserved
+*=============+===================*
+
+
+*=============+===================*
+| magic       |            0xEA51 | // magic number
+*-------------+-------------------*
+| version     |                 1 | // protocol version
+*-------------+-------------------*
+| type        |        0x00000002 | // packet type (Update Response)
+*-------------+-------------------*
+| timestamp   |        1234567891 | // timestamp
+*=============+===================*
+| id          |            0x3A84 | // stream ID
+*-------------+-------------------*
+| type        |                 1 | // packet subtype (Get Local Player)
+*-------------+-------------------*
+| parameter   |                 0 | // no parameter
+*=============+===================*
+| name        | Razortooth        | // Player name
+*-------------+-------------------*
+| posx        |             301.5 | // Player X position
+*-------------+-------------------*
+| posy        |           188.419 | // Player Y position
+*-------------+-------------------*
+| posz        |           1581.15 | // Player Z position
+*-------------+-------------------*
+| angle       |             74.81 | // Player angle
+*-------------+-------------------*
+| GUID        |  31BC1E8B69C3E4A5 | // Player GUID
+*-------------+-------------------*
+| health      |            375810 | // Player health
+*-------------+-------------------*
+| power       |            300000 | // Player power (mana, rage, etc.)
+*-------------+-------------------*
+| level       |                90 | // Player level
+*-------------+-------------------*
+| health_perc |               100 | // Player health/max health ratio in percent
+*-------------+-------------------*
+| power_perc  |                64 | // Player power/max power ratio in percent
+*-------------+-------------------*
+| flags       |        0b10110101 | // Player flags
+*=============+===================*
